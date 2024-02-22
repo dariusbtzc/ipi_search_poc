@@ -7,7 +7,7 @@
 - `pip3 install --upgrade pip setuptools`
 - `pip3 install -r requirements.txt`
 - gcloud auth application-default login
-- go to gcp cloud shell execute this `gcloud auth print-access-toke` and copy it to main.py > bearer variable token
+- go to gcp cloud shell execute this `gcloud auth print-access-token` and copy it to main.py > bearer variable token
 - `streamlit run main.py`
 
 # Reference code
