@@ -22,20 +22,21 @@ if 'summary_history' not in st.session_state:
 
 
 # Text input field for users to enter their search query
-search_query = st.text_input("Search Tech Offers", value = "")
+search_query = st.text_input("Search Tech Offers:", value = "")
 
 
 # Configuration variables for the project and data stores
 project_id = "external-poc-ipi"
 web_datastore_id = "ipi-tech-offers-webpages_1707807506408"
 pdf_datastore_id = "ipi-tech-offers-pdfs_1707298107544"
-bearer_token = "ya29.a0AfB_byCSjijUat7psO1S0BV-fdL3NLrVbLNuXcspuM--mahTYVZ1RgRTEJeswK8yZlAFtK09dYNEr79oG7ca6bI5xi0dcldoH5H4NzQiRUb_PQH6RGIuakx8JS-Cn2EqHUtEu4zH2uZyD9S_G2YIdnL-ft6ntKF9zuAAaOMVwGtJ7823GJNOknH0XU54UdTioy0hP6dqEIjRBlrCx_Am7jGrVb3MuTB2ir8BnA3cSyZmOP0gDHdLpZE8rmqwex8nViI6D9eGIc8hQOmWulWo4i8FdXhpofySJ5Mn36cOZRPaycv6pGSO-xugkITaq7geXgjnwpz76Zte6r4Wo75D70G6TOLkgJWqh5FNkTI-3PXm5E81ZDWBwOw6z6pdRPgCXHja0DxY-8o4-jPJGfx7CIdn2xw99QaCgYKAZkSARASFQHGX2MiVmxuqGF5vdOelQ7ZdARsTQ0421"
+bearer_token = "ya29.a0AfB_byDMgHPcrJ4vRwxb98AUsHZT6nSAyPv_j9ArrrKgSrA5ob1ONDm3NMvrAEqVSNuzkAue7KU2FPsCVd8unEGD1h8WJdjrBrxwhHOmqAyn6OkPD7JXEzEszoP2v4mJTgWXtkQrqLSjyPNy15a3QOlhCzbhFJsnvHXFZb0Lkerjjouo7dfbkKvJqj-0RKUo9pu8uqn3Ha3Ql6rUVtqve1cZgDnpdn3gfGKW77T35bqWHm8d-BINOMNp86zwLcRs1LSj_p9_JNKlU0B2opiz8KDxlfnd1B6d_fU2LsyWSjvvRrC0Md9ad5IQT9be-_e-I67UU-NDiKPfeN08e-QaBjF7zSwizzAehMyo__LKx232OS5m_6Sd3yC3ykF07x4MnFCJ4iIY4NAQICzsr0lEX5PynnAaCgYKAeISARASFQHGX2MiR4y-kks6VmXRqOcj6R5whg0418"
 
 
 # Perform search operations for both web pages and PDFs data stores using the provided query and context
 web_response = search(web_datastore_id, search_query, bearer_token, st.session_state['search_context'])
 pdf_response = search(pdf_datastore_id, search_query, bearer_token, st.session_state['search_context'])
-
+st.write(web_response)
+st.write(pdf_response)
 
 # Update the context in the session state with the context from the responses if available
 if 'context' in web_response:
