@@ -3,35 +3,95 @@ import streamlit as st
 from search_request import search
 from utils import json_to_pandas
 
+
 # Page setup
-st.set_page_config(page_title="Customize Search Engine")
+st.set_page_config(page_title = "IPI Search Engine")
 st.title("IPI Tech Solutions Search Engine")
 
-# Use a text_input to get the keywords to filter the dataframe
-search_query = st.text_input("Search Tech Offers", value="")
 
+# Initialize or update the search context in Streamlit's session state
+if 'search_context' not in st.session_state:
+    st.session_state['search_context'] = None
+
+
+# Initialize search and summary histories in Streamlit's session state
+if 'search_history' not in st.session_state:
+    st.session_state['search_history'] = {'web': [], 'pdf': []}
+if 'summary_history' not in st.session_state:
+    st.session_state['summary_history'] = {'web': [], 'pdf': []}
+
+
+# Text input field for users to enter their search query
+search_query = st.text_input("Search Tech Offers", value = "")
+
+
+# Configuration variables for the project and data stores
 project_id = "external-poc-ipi"
-web_data_store_id = "ipi-tech-offers-webpages_1707807506408"
-pdf_data_store_id = "ipi-tech-offers-pdfs_1707298107544"
-bearer_token = "ya29.a0AfB_byCcPfgHV6AnAdfwZQPnT3lKwEQkcIkxaLLPgqWvoEZ0cHG2Mv5Z9686ZDTeozxmQTL_rWzZcaPaoOzFD0GCCpyKuSQkiQmwdEppqfk7QgdPQes0F9TJYHoqSC6HLQc7mu4G_OC3UMyLKZcGa42N7GuTU4IWd_6VTJjBGbfk7xsEaNJL3_03d99ulsREUK9k71Xev7NZLXoigO9G14FlejVlXUmKvWdUbtgr9TORff5abJ_3kNd9Yg7YdcPj0upfQvD14g5TshWcxmEpVc7cz_T5mIa2DHKzdVE2S44S3L0x89kPgKdoInwj4Df5P1HCn4-lGYbzspEtXn_VMCZ4a96elbhr-yVZEIHmM0BDDKGtpCMQyaBe5-cRvrXjIEcsUVQq1X-eqqmoU7TgwHZBQKDXh-vkaCgYKAZwSARASFQHGX2MiKU0RMLwE-SffbuxwSfa5pQ0423"
+web_datastore_id = "ipi-tech-offers-webpages_1707807506408"
+pdf_datastore_id = "ipi-tech-offers-pdfs_1707298107544"
+bearer_token = "ya29.a0AfB_byCSjijUat7psO1S0BV-fdL3NLrVbLNuXcspuM--mahTYVZ1RgRTEJeswK8yZlAFtK09dYNEr79oG7ca6bI5xi0dcldoH5H4NzQiRUb_PQH6RGIuakx8JS-Cn2EqHUtEu4zH2uZyD9S_G2YIdnL-ft6ntKF9zuAAaOMVwGtJ7823GJNOknH0XU54UdTioy0hP6dqEIjRBlrCx_Am7jGrVb3MuTB2ir8BnA3cSyZmOP0gDHdLpZE8rmqwex8nViI6D9eGIc8hQOmWulWo4i8FdXhpofySJ5Mn36cOZRPaycv6pGSO-xugkITaq7geXgjnwpz76Zte6r4Wo75D70G6TOLkgJWqh5FNkTI-3PXm5E81ZDWBwOw6z6pdRPgCXHja0DxY-8o4-jPJGfx7CIdn2xw99QaCgYKAZkSARASFQHGX2MiVmxuqGF5vdOelQ7ZdARsTQ0421"
 
 
-web_response = search(web_data_store_id, search_query, bearer_token)
-pdf_response = search(pdf_data_store_id, search_query, bearer_token)
+# Perform search operations for both web pages and PDFs data stores using the provided query and context
+web_response = search(web_datastore_id, search_query, bearer_token, st.session_state['search_context'])
+pdf_response = search(pdf_datastore_id, search_query, bearer_token, st.session_state['search_context'])
+
+
+# Update the context in the session state with the context from the responses if available
+if 'context' in web_response:
+    st.session_state['search_context'] = web_response.get('context', None)
+if 'context' in pdf_response and not st.session_state['search_context']:
+    st.session_state['search_context'] = pdf_response.get('context', None)
+
+
+# Update history after each search
+if search_query:
+
+    # Update search history
+    st.session_state['search_history']['web'].append(search_query)
+    st.session_state['search_history']['pdf'].append(search_query)
+
+    # Update summary history
+    web_summary = web_response.get('summary', {}).get('summaryText', 'No summary available')
+    pdf_summary = pdf_response.get('summary', {}).get('summaryText', 'No summary available')
+    st.session_state['summary_history']['web'].append(web_summary)
+    st.session_state['summary_history']['pdf'].append(pdf_summary)
+
+
+# Display search and summary histories
+with st.expander("Search History"):
+    st.write("### Webpages Search History")
+    for i, (query, summary) in enumerate(zip(st.session_state['search_history']['web'], st.session_state['summary_history']['web']), start = 1):
+        st.markdown(f"{i}. Query: `{query}`")
+        st.markdown(f"   Summary: {summary}")
+
+    st.write("### PDFs Search History")
+    for i, (query, summary) in enumerate(zip(st.session_state['search_history']['pdf'], st.session_state['summary_history']['pdf']), start = 1):
+        st.markdown(f"{i}. Query: `{query}`")
+        st.markdown(f"   Summary: {summary}")
+
+
+# Process and display the search results
 try:
+
+    # Convert search results to Pandas DataFrames for easier manipulation
     web_results = json_to_pandas(web_response['results'])
     pdf_results = json_to_pandas(pdf_response['results'])
 
-
     if search_query:
+
+        # Display summaries for web and PDF search results
         st.header('Web Page Search Summary')
         st.write(web_response['summary']['summaryText'])
         st.header('PDF Search Summary')
         st.write(pdf_response['summary']['summaryText'])
-
+        
+        # Create tabs for web and PDF search results
         tab1, tab2 = st.tabs(["Web Search Results", "PDF Search Results"])
         with tab1:
             st.header('Web Search Results')
+
+            # Iterate through web search results and display them
             for n_row, row in web_results.iterrows():
                 st.markdown(f"__{row['title']}__")
                 st.markdown(f"{row['extracted_answer_1']}")
@@ -39,36 +99,15 @@ try:
 
         with tab2:
             st.header('PDF Search Results')
+
+            # Iterate through PDF search results and display them
             for n_row, row in pdf_results.iterrows():
                 st.markdown(f"__{row['title']}__")
                 st.markdown(f"*{row['extracted_answer_1']}*")
                 st.markdown(f"**{row['link']}**")
-except:
+
+except Exception as e:
+    # If there's an error, display a message
+    st.error(f"An error occurred: {e}")
     st.write(web_response)
     st.write(pdf_response)
-    # st.write(web_results)
-    # st.write(pdf_results)
-# response = search_sample(project_id, project_id, web_data_store_id, search_query)
-
-
-# curl -X POST -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-# -H "Content-Type: application/json" \
-# "https://discoveryengine.googleapis.com/v1alpha/projects/105450411481/locations/global/collections/default_collection/dataStores/ipi-tech-offers-pdfs_1707298107544/conversations/-:converse" \
-# -d '{"query":{"input":"<QUERY>"},"summarySpec":{"summaryResultCount":5,"modelPromptSpec":{"preamble":"Given the conversation between a user and a helpful assistant and some search results, create a final answer for the assistant. The answer should use all relevant information from the search results, not introduce any additional information, and use the same words as the search results as much as possible. The assistant's answer should be brief, no more than 5 sentences. Also, whenever necessary, use the actual company name \"IPI\" instead of a placeholder name such as \"The Company\"."},"ignoreAdversarialQuery":true,"includeCitations":true}}'
-
-
-# # Another way to show the filtered results
-# # Show the cards
-# N_cards_per_row = 3
-# if text_search:
-#     for n_row, row in df_search.reset_index().iterrows():
-#         i = n_row%N_cards_per_row
-#         if i==0:
-#             st.write("---")
-#             cols = st.columns(N_cards_per_row, gap="large")
-#         # draw the card
-#         with cols[n_row%N_cards_per_row]:
-#             st.caption(f"{row['Evento'].strip()} - {row['Lugar'].strip()} - {row['Fecha'].strip()} ")
-#             st.markdown(f"**{row['Autor'].strip()}**")
-#             st.markdown(f"*{row['Título'].strip()}*")
-#             st.markdown(f"**{row['Video']}**")

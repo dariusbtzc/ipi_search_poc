@@ -1,63 +1,120 @@
 import requests
 
+
+# TODO: Find out dynamical ways of authentication
 def build_headers(bearer_token):
-    # TODO : find out dynamical ways of authentication
+    """
+    Constructs the headers needed for the API request.
+    
+    Parameters:
+    - bearer_token: A string representing the OAuth 2.0 bearer token for authentication.
+    
+    Returns:
+    - A dictionary with Authorization and Content-Type headers.
+    """
+
     headers = {
         'Authorization': 'Bearer ' + bearer_token,
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json',     # Content type set to JSON
     }
+
     return headers
 
 
-def build_json_data(data_store_id,query):
-    # TODO explore more settings. e.g. follow up quesitions
-    # https://cloud.google.com/generative-ai-app-builder/docs/multi-turn-search
+# See https://cloud.google.com/generative-ai-app-builder/docs/multi-turn-search
+def build_json_data(datastore_id, query, context = None):
+    """
+    Creates the JSON payload for the search request.
+    
+    Parameters:
+    - datastore_id: The identifier of the data store to search against.
+    - query: The search query string.
+    
+    Returns:
+    - A dictionary representing the JSON payload for the request.
+    """
+
     json_data = {
-        'servingConfig': f'projects/external-poc-ipi/locations/global/collections/default_collection/dataStores/{data_store_id}/servingConfigs/default_search',
+        'servingConfig': f'projects/external-poc-ipi/locations/global/collections/default_collection/dataStores/{datastore_id}/servingConfigs/default_search',
         'query': query,
-        'pageSize': '5',
-        'offset': '0',
+        'pageSize': '5',                        # Limit the number of results to 5
+        'offset': '0',                          # Start at the beginning of the results
         'params': {
-            'searchType': '0',
+            'searchType': '0',                  # Placeholder for future search type configurations
         },
         'contentSearchSpec': {
             'summarySpec': {
-                'summaryResultCount': 3,
+                'summaryResultCount': 5,        # Number of summary results to return
             },
             'extractiveContentSpec': {
-                'maxExtractiveAnswerCount': 1,
+                'maxExtractiveAnswerCount': 1,  # Max number of extractive answers to include
             },
         },
     }
+
+    # Add the context to the payload if present
+    # NOTE: Double-check whether 'context' is the correct field name
+    if context:
+        json_data['context'] = context
+
     return json_data
 
 
-def build_url(datastore):
-    return f'https://discoveryengine.googleapis.com/v1beta/projects/external-poc-ipi/locations/global/collections/default_collection/dataStores/{datastore}/servingConfigs/default_search:search'
+def build_url(datastore_id):
+    """
+    Constructs the API request URL.
+    
+    Parameters:
+    - datastore_id: The identifier of the data store being queried.
+    
+    Returns:
+    - A string with the fully constructed URL for the search request.
+    """
+
+    return f'https://discoveryengine.googleapis.com/v1beta/projects/external-poc-ipi/locations/global/collections/default_collection/dataStores/{datastore_id}/servingConfigs/default_search:search'
 
 
 def curl_request(url, headers, json_data):
+    """
+    Sends a POST request to the API.
+    
+    Parameters:
+    - url: The URL to which the request is sent.
+    - headers: The headers for the request, including authorization.
+    - json_data: The JSON payload of the request.
+    
+    Returns:
+    - The response from the API as a requests.Response object.
+    """
+
     response = requests.post(
-        url=url,
-        headers=headers,
-        json=json_data
+        url = url,
+        headers = headers,
+        json = json_data
     )
+
     return response
 
 
-def search(datastore, query, bearer_token):
-    url = build_url(datastore)
+def search(datastore_id, query, bearer_token, context = None):
+    """
+    Main function to perform a search operation.
+    
+    Parameters:
+    - datastore_id: The data store to search against.
+    - query: The search query string.
+    - bearer_token: The OAuth 2.0 bearer token for authentication.
+    
+    Returns:
+    - The parsed JSON response from the search API.
+    """
+
+    # Build the URL, headers, and JSON data for the search request
+    url = build_url(datastore_id)
     headers = build_headers(bearer_token)
-    json_data = build_json_data(datastore, query)
+    json_data = build_json_data(datastore_id, query, context)
+    
+    # Send the search request and return the JSON response
     response = curl_request(url, headers, json_data)
+
     return response.json()
-
-
-# Note: json_data will not be serialized by requests
-# exactly as it was in the original request.
-# data = '{\n"servingConfig": "projects/external-poc-ipi/locations/global/collections/default_collection/dataStores/ipi-tech-offers-webpages_1707807506408/servingConfigs/default_search",\n"query": "waste",\n"pageSize": "5",\n"offset": "0",\n"params": {"searchType": "0"},\n"contentSearchSpec":  {\n   "summarySpec":\n   {\n     "summaryResultCount": 3\n   },\n   "extractiveContentSpec": { "maxExtractiveAnswerCount" : 1}\n }\n}'
-# response = requests.post(
-#    'https://discoveryengine.googleapis.com/v1beta/projects/external-poc-ipi/locations/global/collections/default_collection/dataStores/ipi-tech-offers-webpages_1707807506408/servingConfigs/default_search:search',
-#    headers=headers,
-#    data=data,
-# )
