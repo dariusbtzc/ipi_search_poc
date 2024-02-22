@@ -53,9 +53,8 @@ def build_json_data(datastore_id, query, context = None):
     }
 
     # Add the context to the payload if present
-    # NOTE: Double-check whether 'context' is the correct field name
     if context:
-        json_data['context'] = context
+        json_data['context'] = context          # Assuming 'context' is the correct field name  
 
     return json_data
 

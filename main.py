@@ -29,14 +29,14 @@ search_query = st.text_input("Search Tech Offers:", value = "")
 project_id = "external-poc-ipi"
 web_datastore_id = "ipi-tech-offers-webpages_1707807506408"
 pdf_datastore_id = "ipi-tech-offers-pdfs_1707298107544"
-bearer_token = "ya29.a0AfB_byDMgHPcrJ4vRwxb98AUsHZT6nSAyPv_j9ArrrKgSrA5ob1ONDm3NMvrAEqVSNuzkAue7KU2FPsCVd8unEGD1h8WJdjrBrxwhHOmqAyn6OkPD7JXEzEszoP2v4mJTgWXtkQrqLSjyPNy15a3QOlhCzbhFJsnvHXFZb0Lkerjjouo7dfbkKvJqj-0RKUo9pu8uqn3Ha3Ql6rUVtqve1cZgDnpdn3gfGKW77T35bqWHm8d-BINOMNp86zwLcRs1LSj_p9_JNKlU0B2opiz8KDxlfnd1B6d_fU2LsyWSjvvRrC0Md9ad5IQT9be-_e-I67UU-NDiKPfeN08e-QaBjF7zSwizzAehMyo__LKx232OS5m_6Sd3yC3ykF07x4MnFCJ4iIY4NAQICzsr0lEX5PynnAaCgYKAeISARASFQHGX2MiR4y-kks6VmXRqOcj6R5whg0418"
+bearer_token = "ya29.a0AfB_byAXslDohK-tlKvm4iXt_GH6c7Vwl8gn6oJ6gZ5FigTnI9zJbf6Zgp0NlQDSj7EFr7vavv7w4gAqmRSDO1r8MhW-OgInjKoPdAd4p_aH7Q7pP2H7tHINKLpVHGN2oeLPn0xv7T8W9JnRKMVg3Ans2a-jdZTPD9u5afKKTc9fwPmr5MbV420fZ1rlVDZJaP7zG9ZARRZgeU5qyqjOF78s0K4yIE1CqTHvmJO4PQZA0PTe4MQDHVlJcR5TrBw8LQNCOgTgaGQ8VDNTzHqklsHX9UyDe23gfrAUuUS2QyL0Pu6v1ohJRclwWmfDQdkargjDvBSSZh8oA11-NRpv7UM-ES2vqWgvWJ6sJ1TzUKviZkzJvygNYc-AaGtT-GAwJFf6JH9C197vtLuPJ0ysHBheCC76UgaCgYKAdQSARASFQHGX2MivEqO1CDuiXqGPHAw8jbSIg0421"
 
 
 # Perform search operations for both web pages and PDFs data stores using the provided query and context
 web_response = search(web_datastore_id, search_query, bearer_token, st.session_state['search_context'])
 pdf_response = search(pdf_datastore_id, search_query, bearer_token, st.session_state['search_context'])
-st.write(web_response)
-st.write(pdf_response)
+# st.write(web_response)
+# st.write(pdf_response)
 
 # Update the context in the session state with the context from the responses if available
 if 'context' in web_response:
