@@ -1,7 +1,7 @@
 import requests
 
 
-# TODO: Find out dynamical ways of authentication
+# TODO: Find a dynamical way for authentication
 def build_headers(bearer_token):
     """
     Constructs the headers needed for the API request.
@@ -21,7 +21,6 @@ def build_headers(bearer_token):
     return headers
 
 
-# See https://cloud.google.com/generative-ai-app-builder/docs/multi-turn-search
 def build_json_data(datastore_id, query, context = None):
     """
     Creates the JSON payload for the search request.
@@ -40,21 +39,25 @@ def build_json_data(datastore_id, query, context = None):
         'pageSize': '5',                        # Limit the number of results to 5
         'offset': '0',                          # Start at the beginning of the results
         'params': {
-            'searchType': '0',                  # Placeholder for future search type configurations
+            'searchType': '0',                  
         },
-        'contentSearchSpec': {
+        'contentSearchSpec': {                  # Configuration for summary
             'summarySpec': {
-                'summaryResultCount': 5,        # Number of summary results to return
+                'summaryResultCount': 5,
+                'includeCitations': True,
+                'ignoreAdversarialQuery': True,
+                'ignoreNonSummarySeekingQuery': True
             },
-            'extractiveContentSpec': {
-                'maxExtractiveAnswerCount': 1,  # Max number of extractive answers to include
-            },
-        },
+            'extractiveContentSpec': {          # Configuration for extractive answer
+                'maxExtractiveAnswerCount': 1,  
+                'returnExtractiveSegmentScore': True
+            }
+        }
     }
 
-    # Add the context to the payload if present
-    if context:
-        json_data['context'] = context          # Assuming 'context' is the correct field name  
+    # # Add the context to the payload, if present
+    # if context:
+    #     json_data['context'] = context 
 
     return json_data
 
@@ -108,10 +111,10 @@ def search(datastore_id, query, bearer_token, context = None):
     - The parsed JSON response from the search API.
     """
 
-    # Build the URL, headers, and JSON data for the search request
+    # Build the URL, headers and JSON data for the search request
     url = build_url(datastore_id)
     headers = build_headers(bearer_token)
-    json_data = build_json_data(datastore_id, query, context)
+    json_data = build_json_data(datastore_id, query)
     
     # Send the search request and return the JSON response
     response = curl_request(url, headers, json_data)
